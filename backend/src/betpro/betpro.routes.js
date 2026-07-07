@@ -5,6 +5,7 @@ const {
   withdrawHandler,
   createUserHandler,
   checkBalanceHandler,
+  ledgerHandler,
 } = require("./betpro.controller");
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.post("/deposit", depositHandler);
 router.post("/withdraw", withdrawHandler);
 router.post("/create-user", createUserHandler);
 router.post("/balance", checkBalanceHandler);
+router.post("/ledger", ledgerHandler);
 
 module.exports = router;

@@ -412,6 +412,194 @@ async function createUser({
   };
 }
 
+/**
+ * IMPORTANT: BetPro do ALAG IDs use karta hai per user:
+ * - "/Accounts/Cash?id=XXXX"  -> Cash/deposit/withdraw ke liye (userId)
+ * - "accounts/ledger?accountId=YYYY" (row ke "L" button ke onclick me) -> Ledger ke liye
+ * Yeh dono numbers DIFFERENT hote hain. Ledger call mein galat (Cash) ID
+ * bhejne se BetPro Ledger report ki bajaye generic Accounts/Chart page
+ * return kar deta hai (jisme bhi coincidentally id="tableLedger" table
+ * hoti hai, lekin wo sirf downline listing hai, "-" placeholders ke sath).
+ */
+
+/**
+ * BetPro ke wall-clock date format (M/D/YYYY h:mm A) mein convert karta hai.
+ * IMPORTANT: BetPro server From/To ko UTC clock-numbers ki tarah treat karta
+ * hai (jaisa DevTools request se confirm hua — 7:00 PM UTC == "7:00 PM").
+ * Isi liye UTC getters use karte hain, local timezone nahi.
+ */
+function formatBetProDateTime(date) {
+  const hours24 = date.getUTCHours();
+  const period = hours24 >= 12 ? "PM" : "AM";
+  let hours12 = hours24 % 12;
+  if (hours12 === 0) hours12 = 12;
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+
+  return `${date.getUTCMonth() + 1}/${date.getUTCDate()}/${date.getUTCFullYear()} ${hours12}:${minutes} ${period}`;
+}
+
+/**
+ * Ledger page ke tableLedger se rows parse karta hai.
+ * Har row: [#, Date(span.utctime), Description(a onclick popup_report(marketId, clientId)), Amount, Balance]
+ */
+/**
+ * Ledger page ke tableLedger se rows parse karta hai.
+ * Har row: [#, Date(span.utctime), Description(a onclick popup_report(marketId, clientId)), Amount, Balance]
+ *
+ * NOTE: Jab IsFirstVisit=False bheja jata tha, BetPro sirf empty/placeholder
+ * table shell return karta tha ("-" cells, blank date). Isi wajah se saare
+ * entries null aa rahe thay. Fix: IsFirstVisit hamesha "True" bhejo (jaisa
+ * actual dashboard bhejta hai), aur yahan bhi ek safety-net rakh dete hain
+ * taake agar kabhi genuinely empty/placeholder row aaye to wo silently skip
+ * ho jaye, garbage entry na bane.
+ */
+function parseLedgerRows(html) {
+  const $ = cheerio.load(html);
+  const entries = [];
+
+  let rows = $("#tableLedger tbody tr");
+  if (!rows.length) {
+    // Fallback agar table ka id kabhi change ho ya markup thora alag ho
+    rows = $("table.table tbody tr");
+  }
+
+  rows.each((_, row) => {
+    const cells = $(row).find("td");
+    if (cells.length < 5) return;
+
+    const dateCell = $(cells.get(1));
+    const dateText =
+      dateCell.find("span.utctime").first().text().trim() ||
+      dateCell.text().trim();
+
+    const descCell = $(cells.get(2));
+    const descLink = descCell.find("a").first();
+    const description = descLink.text().trim() || descCell.text().trim();
+
+    // Placeholder/"no data" row hai to skip kar do
+    if (!dateText || description === "-" || /no data/i.test(description)) {
+      return;
+    }
+
+    const onclick = descLink.attr("onclick") || "";
+    const marketIdMatch = onclick.match(/popup_report\((\d+),/);
+    const marketId = marketIdMatch ? marketIdMatch[1] : null;
+
+    const amountText = $(cells.get(3)).text().trim().replace(/,/g, "");
+    const balanceText = $(cells.get(4)).text().trim().replace(/,/g, "");
+
+    const amount = Number(amountText);
+    const balance = Number(balanceText);
+
+    // Agar amount/balance parse nahi hue (NaN), row garbage hai — skip
+    if (!Number.isFinite(amount) || !Number.isFinite(balance)) return;
+
+    entries.push({
+      date: dateText,
+      description,
+      marketId,
+      amount,
+      balance,
+    });
+  });
+
+  return entries;
+}
+
+/**
+ * Target username ki Ledger (Account Statement) fetch karta hai.
+ * from/to optional hain (Date objects) — default last 24 hours (UTC).
+ */
+async function getUserLedger({ client, targetUserId, from, to }) {
+  const toDate = to || new Date();
+  const fromDate = from || new Date(toDate.getTime() - 24 * 60 * 60 * 1000);
+
+  const params = new URLSearchParams({
+    From: formatBetProDateTime(fromDate),
+    To: formatBetProDateTime(toDate),
+    ClientId: String(targetUserId),
+    EventTypeId: "0",
+    IsFirstVisit: "True",
+  });
+
+  const ledgerUrl = `${BASE_URL}/Accounts/Ledger?${params.toString()}`;
+
+  const response = await client.get(ledgerUrl, {
+    headers: { Referer: ACCOUNTS_URL },
+  });
+
+  if (response.status !== 200) {
+    throw new Error(`Ledger page open nahi hua. Status: ${response.status}`);
+  }
+
+  const $ = cheerio.load(response.data);
+
+  const titleText = $("title").first().text().trim();
+  const displayNameFromTitle = titleText.split(" - ")[0]?.trim();
+  const displayName =
+    displayNameFromTitle && displayNameFromTitle.toLowerCase() !== "chart"
+      ? displayNameFromTitle
+      : $(".card-header strong").first().text().trim() || null;
+
+  const entries = parseLedgerRows(response.data);
+
+  return {
+    displayName,
+    from: formatBetProDateTime(fromDate),
+    to: formatBetProDateTime(toDate),
+    entries,
+    openingBalance: entries.length
+      ? entries[0].balance - entries[0].amount
+      : null,
+    closingBalance: entries.length ? entries[entries.length - 1].balance : null,
+  };
+}
+async function findBetProAccountIds({ client, username }) {
+  const cleanUsername = String(username).trim().toLowerCase();
+
+  if (!cleanUsername) {
+    throw new Error("Target username required hai.");
+  }
+
+  const response = await client.get(ACCOUNTS_URL, {
+    headers: { Referer: `${BASE_URL}/` },
+  });
+
+  if (response.status !== 200) {
+    throw new Error(`Accounts page open nahi hua. Status: ${response.status}`);
+  }
+
+  const $ = cheerio.load(response.data);
+  let userId = null;
+  let ledgerAccountId = null;
+
+  $("tr").each((_, row) => {
+    if (userId && ledgerAccountId) return;
+
+    const rowText = $(row).text().replace(/\s+/g, " ").trim().toLowerCase();
+    if (!rowText.includes(cleanUsername)) return;
+
+    const cashLink = $(row).find("a[href*='/Accounts/Cash?id=']").first();
+    const cashHref = cashLink.attr("href");
+    if (cashHref) {
+      const cashMatch = cashHref.match(/[?&]id=(\d+)/);
+      if (cashMatch?.[1]) userId = cashMatch[1];
+    }
+
+    const ledgerLink = $(row)
+      .find("a[onclick*='accounts/ledger?accountId=']")
+      .first();
+    const ledgerOnclick = ledgerLink.attr("onclick") || "";
+    const ledgerMatch = ledgerOnclick.match(/accountId=(\d+)/);
+    if (ledgerMatch?.[1]) ledgerAccountId = ledgerMatch[1];
+  });
+
+  if (!userId && !ledgerAccountId) {
+    throw new Error(`User "${username}" not found in BetPro Accounts page.`);
+  }
+
+  return { userId, ledgerAccountId };
+}
 module.exports = {
   loginBetProAgent,
   findBetProUserIdByUsername,
@@ -419,4 +607,6 @@ module.exports = {
   withdrawCash,
   createUser,
   getUserBalance,
+  getUserLedger, // 👈 add
+  findBetProAccountIds, // 👈 add this
 };

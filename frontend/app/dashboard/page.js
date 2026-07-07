@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import WalletActionModal from "../../components/WalletActionModal";
 import CreateUserModal from "../../components/CreateUserModal";
 import CheckBalanceModal from "../../components/CheckBalanceModal";
+import LedgerModal from "../../components/LedgerModal";
 
 function DepositIcon(props) {
   return (
@@ -72,6 +73,22 @@ function ScaleIcon(props) {
   );
 }
 
+function LedgerIcon(props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+    </svg>
+  );
+}
+
 function LogOutIcon(props) {
   return (
     <svg
@@ -95,6 +112,7 @@ export default function DashboardPage() {
   const [modalMode, setModalMode] = useState(null);
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [showCheckBalance, setShowCheckBalance] = useState(false);
+  const [showLedger, setShowLedger] = useState(false);
 
   useEffect(() => {
     const storedSessionId = sessionStorage.getItem("sessionId");
@@ -159,6 +177,16 @@ export default function DashboardPage() {
       accentBg: "bg-[#4C8EFF]/10",
       accentBorder: "hover:border-[#4C8EFF]/40",
       onClick: () => setShowCheckBalance(true),
+    },
+    {
+      key: "ledger",
+      label: "Ledger",
+      description: "View a user's account ledger",
+      icon: LedgerIcon,
+      accent: "text-[#E85D9C]",
+      accentBg: "bg-[#E85D9C]/10",
+      accentBorder: "hover:border-[#E85D9C]/40",
+      onClick: () => setShowLedger(true),
     },
   ];
 
@@ -250,6 +278,13 @@ export default function DashboardPage() {
         <CheckBalanceModal
           sessionId={sessionId}
           onClose={() => setShowCheckBalance(false)}
+        />
+      )}
+
+      {showLedger && (
+        <LedgerModal
+          sessionId={sessionId}
+          onClose={() => setShowLedger(false)}
         />
       )}
     </main>

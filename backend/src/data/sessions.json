@@ -84,5 +84,127 @@
         }
       ]
     }
+  },
+  "8d802db4-ac11-4e56-a759-05ca07b62ae3": {
+    "username": "Pawais32S",
+    "createdAt": 1783358288323,
+    "jar": {
+      "version": "tough-cookie@6.0.1",
+      "storeType": "MemoryCookieStore",
+      "rejectPublicSuffixes": true,
+      "enableLooseMode": false,
+      "allowSpecialUseDomain": true,
+      "prefixSecurity": "silent",
+      "cookies": [
+        {
+          "key": "AntiForgery.WebExchange",
+          "value": "CfDJ8OESfm1VDIlPqfjoseeI7XQNnMyO_oKeWypobgn20NAtDZrJYmCrdr47nDrC7ThmxcNSpEmA_ILX7fwq_nTCDCSLSdj63MIiphMfo3ihXJYELytqWBSS57jA0RT7uZKfSmWSIbSuAaPmWSxAGA973Ns",
+          "domain": "bpexch.live",
+          "path": "/",
+          "httpOnly": true,
+          "hostOnly": true,
+          "creation": "2026-07-06T17:18:06.062Z",
+          "lastAccessed": "2026-07-07T07:01:34.031Z",
+          "sameSite": "strict"
+        },
+        {
+          "key": ".AspNetCore.Mvc.CookieTempDataProvider",
+          "value": "CfDJ8CbKaJujev1Ip52dHVPH4oDY8y0lzuQlOMsg44ai8CtF9eQdnOH4SAG2AV88k9-dDQjmPrKbwmFj-1N1RXIaT1M9rgMV0uUdJGqRvGvSEeijI8as-VM0TmcpjMPHEq9xIg",
+          "domain": "bpexch.live",
+          "path": "/",
+          "httpOnly": true,
+          "hostOnly": true,
+          "creation": "2026-07-06T17:18:07.020Z",
+          "lastAccessed": "2026-07-07T07:01:34.031Z",
+          "sameSite": "lax"
+        }
+      ]
+    }
+  },
+  "7d03f8a0-9056-4783-a72c-a368ffbc4a0f": {
+    "username": "Pawais32S",
+    "createdAt": 1783407857128,
+    "jar": {
+      "version": "tough-cookie@6.0.1",
+      "storeType": "MemoryCookieStore",
+      "rejectPublicSuffixes": true,
+      "enableLooseMode": false,
+      "allowSpecialUseDomain": true,
+      "prefixSecurity": "silent",
+      "cookies": [
+        {
+          "key": "AntiForgery.WebExchange",
+          "value": "CfDJ8OESfm1VDIlPqfjoseeI7XRLNH_JDzU38lst0PZW7-i7AJGUkuoU03KYM01OxEo0tUiJ2iIfLyFRFsTXs8vfSLWRiL7bpRfpT3DlGTuSW7Fmjs7x-3B_r-DPwNs1q7HH4vYPHivGEe1NfkORTe4xymI",
+          "domain": "bpexch.live",
+          "path": "/",
+          "httpOnly": true,
+          "hostOnly": true,
+          "creation": "2026-07-07T07:04:13.620Z",
+          "lastAccessed": "2026-07-07T07:14:49.376Z",
+          "sameSite": "strict"
+        },
+        {
+          "key": "wex3authtoken",
+          "value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjgzNTUyMzYiLCJzdWIiOiJQYXdhaXMzMlMiLCJ0eXAiOiIyIiwicHJpdiI6IjAiLCJjdXIiOiJESE0iLCJjcmUiOiIzNS4wMDAwIiwibmJmIjoxNzgzNDA3ODU3LCJleHAiOjE3ODM0MTE0NTcsImlhdCI6MTc4MzQwNzg1NywiaXNzIjoid2ViZXhjaGFuZ2UifQ.zDni63hklEG1yfEgyTH48PI4gVX8X-txbx1lf-T6qTW2AShO2g5-OQ2I3TFvUYRmQaCjovi_fNn4-NhqMAQ_sA",
+          "expires": "2026-07-07T19:04:17.000Z",
+          "domain": "bpexch.live",
+          "path": "/",
+          "hostOnly": false,
+          "creation": "2026-07-07T07:04:15.414Z",
+          "lastAccessed": "2026-07-07T07:14:49.376Z"
+        },
+        {
+          "key": "wex3reftoken",
+          "value": "086bd632-e64b-4562-b0b5-1b045af2ea6f",
+          "expires": "2026-07-07T19:04:17.000Z",
+          "domain": "bpexch.live",
+          "path": "/",
+          "hostOnly": false,
+          "creation": "2026-07-07T07:04:15.415Z",
+          "lastAccessed": "2026-07-07T07:14:49.376Z"
+        },
+        {
+          "key": "wexscktoken",
+          "value": "2187F9376610A7164E65F2FE48856C5602D7F331363C2D0953B7E7BE4DB9BC32",
+          "expires": "2026-07-07T19:04:17.000Z",
+          "domain": "bpexch.live",
+          "path": "/",
+          "hostOnly": false,
+          "creation": "2026-07-07T07:04:15.415Z",
+          "lastAccessed": "2026-07-07T07:14:49.376Z"
+        },
+        {
+          "key": "wexutcoffset",
+          "value": "300",
+          "expires": "2026-07-07T19:04:17.000Z",
+          "domain": "bpexch.live",
+          "path": "/",
+          "hostOnly": false,
+          "creation": "2026-07-07T07:04:15.415Z",
+          "lastAccessed": "2026-07-07T07:14:49.376Z"
+        },
+        {
+          "key": "wexdevice",
+          "value": "Google%20Chrome",
+          "expires": "2026-07-07T19:04:17.000Z",
+          "domain": "bpexch.live",
+          "path": "/",
+          "hostOnly": false,
+          "creation": "2026-07-07T07:04:15.415Z",
+          "lastAccessed": "2026-07-07T07:14:49.376Z"
+        },
+        {
+          "key": ".AspNetCore.Mvc.CookieTempDataProvider",
+          "value": "CfDJ8OESfm1VDIlPqfjoseeI7XSKHwIZYOeN-EXIs7fjPdwTTkXAvKrINobZ5MLDOEilw3FgAFc33MgEkacrOdukvCHtKKUXCWaTFDo44EMAufpKjb8myzfkAD6f9lUZDokS2w",
+          "domain": "bpexch.live",
+          "path": "/",
+          "httpOnly": true,
+          "hostOnly": true,
+          "creation": "2026-07-07T07:04:15.415Z",
+          "lastAccessed": "2026-07-07T07:14:49.376Z",
+          "sameSite": "lax"
+        }
+      ]
+    }
   }
 }

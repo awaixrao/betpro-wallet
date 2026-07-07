@@ -6,17 +6,14 @@ const {
   withdrawCash,
   createUser,
   getUserBalance,
+  getUserLedger,
+  findBetProAccountIds,
 } = require("./betpro.service");
 const { createBetProClient } = require("./betpro.client");
 const { loadSessionsFromDisk, saveSessionsToDisk } = require("./session.store");
 
 const activeBetProSessions = new Map();
 
-/**
- * Server start hote hi disk se purane sessions restore karta hai.
- * Isi wajah se nodemon restart (ya dev server dobara start) hone par
- * bhi dobara login nahi karna parta.
- */
 function restoreSessionsFromDisk() {
   const savedSessions = loadSessionsFromDisk();
 
@@ -45,11 +42,6 @@ function restoreSessionsFromDisk() {
   }
 }
 
-/**
- * Poora Map disk par likh deta hai (jar serialize karke).
- * Har handler ke successful hone ke baad call hota hai taake cookie
- * changes (agar BetPro naya session cookie bheje) bhi persist ho jayein.
- */
 function persistAllSessions() {
   const plainObject = {};
 
@@ -298,10 +290,57 @@ async function checkBalanceHandler(req, res) {
   }
 }
 
+async function ledgerHandler(req, res) {
+  try {
+    const { sessionId, username, from, to } = req.body || {};
+    const session = getSessionOrThrow(sessionId);
+
+    if (!username || typeof username !== "string") {
+      return res
+        .status(400)
+        .json({ success: false, message: "username required hai." });
+    }
+
+    // FIX: Cash-page userId ki bajaye ledger ka apna accountId chahiye
+    const { ledgerAccountId } = await findBetProAccountIds({
+      client: session.client,
+      username,
+    });
+
+    if (!ledgerAccountId) {
+      return res.status(400).json({
+        success: false,
+        message: `Ledger account id nahi mila for "${username}".`,
+      });
+    }
+
+    const result = await getUserLedger({
+      client: session.client,
+      targetUserId: ledgerAccountId,
+      from: from ? new Date(from) : undefined,
+      to: to ? new Date(to) : undefined,
+    });
+
+    persistAllSessions();
+
+    return res.status(200).json({
+      success: true,
+      username,
+      ...result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Ledger fetch failed.",
+    });
+  }
+}
+
 module.exports = {
   loginHandler,
   depositHandler,
   withdrawHandler,
   createUserHandler,
   checkBalanceHandler,
+  ledgerHandler,
 };

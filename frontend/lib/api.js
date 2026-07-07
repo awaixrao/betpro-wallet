@@ -56,3 +56,8 @@ export function createUserBetPro({ sessionId, username, password }) {
 export function checkBalanceBetPro({ sessionId, username }) {
   return postJson("/api/betpro/balance", { sessionId, username });
 }
+
+// 👇 naya function — ledger fetch karne ke liye
+export function getLedgerBetPro({ sessionId, username, from, to }) {
+  return postJson("/api/betpro/ledger", { sessionId, username, from, to });
+}
